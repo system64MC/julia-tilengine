@@ -1,12 +1,12 @@
 module Tilengine
-using Libdl
 
-global tlnLib = Libdl.dlopen("libTilengine.so")
+
 
 include("engine.jl")
 include("bitmap.jl")
 include("layers.jl")
 include("window.jl")
+include("lib.jl")
 
 using .Setup
 using .Bitmaps
@@ -15,4 +15,4 @@ using .Windowing
 
 export init
 
-end
+end # module Tilengine

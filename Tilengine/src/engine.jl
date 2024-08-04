@@ -1,14 +1,14 @@
 module Setup
 using Libdl
-import ..Tilengine: tlnLib
+import LibEngine: tlnLib
 
 mutable struct Engine
     _data::Ptr{Cvoid}
 end
 
-global _rasterCallback::Union{Function,Nothing} = nothing
+global _rasterCallback::Union{Base.Callable,Nothing} = nothing
 global _rUdata = nothing
-global _frameCallback::Union{Function,Nothing} = nothing
+global _frameCallback::Union{Base.Callable,Nothing} = nothing
 global _fUdata = nothing
 function _CrasterCallback(line::Cint)::Nothing
     if (_rasterCallback !== nothing)
@@ -27,35 +27,36 @@ const c_rcallback = @cfunction(_CrasterCallback, Cvoid, (Cint,))
 const c_fcallback = @cfunction(_CframeCallback, Cvoid, (Cint,))
 
 # Declare the C functions using `ccall`
-const tln_init_ptr = Libdl.dlsym(tlnLib, "TLN_Init")
+tln_init_ptr = Libdl.dlsym(tlnLib, "TLN_Init")
 const tln_setRasterCallback_ptr = Libdl.dlsym(tlnLib, "TLN_SetRasterCallback")
 const tln_setFrameCallback_ptr = Libdl.dlsym(tlnLib, "TLN_SetFrameCallback")
 function init(hres::Integer, vres::Integer, numlayers::Integer, numsprites::Integer, numanimations::Integer)::Engine
-    e = Engine(ccall(tln_init_ptr, Ptr{Cvoid}, (Cint, Cint, Cint, Cint, Cint), hres, vres, numlayers, numsprites, numanimations))
+    a = ccall(tln_init_ptr, Ptr{Cvoid}, (Cint, Cint, Cint, Cint, Cint), hres, vres, numlayers, numsprites, numanimations)
+    e = Engine(a)
     ccall(tln_setRasterCallback_ptr, Cvoid, (Ptr{Cvoid},), c_rcallback)
     ccall(tln_setFrameCallback_ptr, Cvoid, (Ptr{Cvoid},), c_fcallback)
     return e
 end
 
-const tln_deinit_ptr = Libdl.dlsym(tlnLib, "TLN_Deinit")
+tln_deinit_ptr = Libdl.dlsym(tlnLib, "TLN_Deinit")
 function deinit()::Nothing
     ccall(tln_setRasterCallback_ptr, Cvoid, ())
     return
 end
 
-const tln_deleteContext_ptr = Libdl.dlsym(tlnLib, "TLN_DeleteContext")
+tln_deleteContext_ptr = Libdl.dlsym(tlnLib, "TLN_DeleteContext")
 function deleteContext(engine::Engine)::Bool
     r = ccall(tln_setRasterCallback_ptr, Bool, (Ptr{Cvoid},), engine._data)
     engine._data = C_NULL
     return r
 end
 
-const tln_setContext_ptr = Libdl.dlsym(tlnLib, "TLN_SetContext")
+tln_setContext_ptr = Libdl.dlsym(tlnLib, "TLN_SetContext")
 function setContext(engine::Engine)::Bool
     return ccall(tln_setContext_ptr, Bool, (Ptr{Cvoid},), engine._data)
 end
 
-const tln_getContext_ptr = Libdl.dlsym(tlnLib, "TLN_GetContext")
+tln_getContext_ptr = Libdl.dlsym(tlnLib, "TLN_GetContext")
 function getContext()::Engine
     return Engine(ccall(tln_init_ptr, Ptr{Cvoid}, ()))
 end

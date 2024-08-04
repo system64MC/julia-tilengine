@@ -1,9 +1,9 @@
 # push!(LOAD_PATH, joinpath(@__DIR__, "Tilengine"))
-include("tilengine/tilengine.jl")
-import .Tilengine.Setup as s
-import .Tilengine.Bitmaps as bmaps
-import .Tilengine.Layers as layers
-import .Tilengine.Windowing as win
+# include("tilengine/tilengine.jl")
+import Tilengine.Setup as s
+import Tilengine.Bitmaps as bmaps
+import Tilengine.Layers as layers
+import Tilengine.Windowing as win
 
 e = s.init(320, 224, 1, 1, 1)
 bitmap = bmaps.loadBitmap("elis2.png")
